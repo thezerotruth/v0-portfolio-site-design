@@ -28,7 +28,7 @@ export function FooterSection() {
         asChild
       >
         <a 
-          href="https://blobs.vusercontent.net/blob/James_Edington_Director_of_Sales_Remote%20%281%29-lQJxKZPLnTlRRD8CPIqMBmwAzMXn8B.pdf" 
+          href="https://blobs.vusercontent.net/blob/James_Edington_Resume_VP-idftXfs1bKSaMWkbLdRQ8XE4b3neCR.pdf" 
           target="_blank"
           rel="noopener noreferrer"
         >
