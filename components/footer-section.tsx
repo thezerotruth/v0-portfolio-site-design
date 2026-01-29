@@ -1,9 +1,11 @@
 "use client"
 
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
+
 export function FooterSection() {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <Button
         size="lg"
         className="h-12 bg-primary text-primary-foreground hover:bg-primary/90"
@@ -34,6 +36,17 @@ export function FooterSection() {
         >
           Download Resume
         </a>
+      </Button>
+
+      <Button
+        size="lg"
+        className="h-12 hover:opacity-90"
+        style={{ backgroundColor: "oklch(0.55 0.15 260)", color: "white" }}
+        asChild
+      >
+        <Link href="/interview-tools">
+          Interview Tools
+        </Link>
       </Button>
     </div>
   )
