@@ -2,9 +2,10 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Moon, Sun } from "lucide-react"
 
 export default function ParkingCalculatorPage() {
+  const [darkMode, setDarkMode] = useState(false)
   const [mode, setMode] = useState<"uni" | "hourly">("uni")
   const [sectionsOpen, setSectionsOpen] = useState({
     revenue: true,
@@ -110,19 +111,38 @@ export default function ParkingCalculatorPage() {
     setShowResults(true)
   }
 
+  // Dark mode style helpers
+  const labelClass = `block text-[13px] font-semibold mb-1.5 ${darkMode ? "text-[#94a3b8]" : "text-[#475569]"}`
+  const inputClass = `w-full p-2.5 border rounded-md text-[15px] focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)] ${
+    darkMode ? "bg-[#0f172a] border-[#334155] text-[#e2e8f0]" : "bg-white border-[#cbd5e1] text-[#333]"
+  }`
+  const sectionHeaderClass = `w-full py-4 px-6 border-y cursor-pointer flex justify-between items-center font-semibold text-left ${
+    darkMode 
+      ? "bg-[#0f172a] border-[#334155] text-[#e2e8f0] hover:bg-[#1e293b]" 
+      : "bg-[#f8fafc] border-[#e2e8f0] text-[#334155] hover:bg-[#f1f5f9]"
+  }`
+
   return (
-    <div className="min-h-screen bg-[#f4f6f8] p-5 font-sans text-[#333]">
-      <div className="max-w-[600px] mx-auto mb-4">
+    <div className={`min-h-screen p-5 font-sans transition-colors ${darkMode ? "bg-[#0f172a] text-[#e2e8f0]" : "bg-[#f4f6f8] text-[#333]"}`}>
+      <div className="max-w-[600px] mx-auto mb-4 flex items-center justify-between">
         <Link 
           href="/interview-tools" 
-          className="inline-flex items-center gap-2 text-[#2563eb] hover:underline text-sm"
+          className={`inline-flex items-center gap-2 hover:underline text-sm ${darkMode ? "text-[#60a5fa]" : "text-[#2563eb]"}`}
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Interview Tools
         </Link>
+        <button
+          type="button"
+          onClick={() => setDarkMode(!darkMode)}
+          className={`p-2 rounded-lg transition-colors ${darkMode ? "bg-[#1e293b] text-[#fbbf24] hover:bg-[#334155]" : "bg-white text-[#64748b] hover:bg-[#f1f5f9]"} border-none cursor-pointer shadow-sm`}
+          aria-label="Toggle dark mode"
+        >
+          {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </button>
       </div>
 
-      <div className="bg-white max-w-[600px] mx-auto rounded-xl shadow-lg overflow-hidden">
+      <div className={`max-w-[600px] mx-auto rounded-xl shadow-lg overflow-hidden ${darkMode ? "bg-[#1e293b]" : "bg-white"}`}>
         {/* Header */}
         <div className="bg-[#0f172a] p-6 text-center text-white">
           <h2 className="m-0 text-2xl font-bold">Spot Parking Architect</h2>
@@ -130,14 +150,14 @@ export default function ParkingCalculatorPage() {
         </div>
 
         {/* Mode Switch */}
-        <div className="flex p-2.5 bg-[#e2e8f0]">
+        <div className={`flex p-2.5 ${darkMode ? "bg-[#0f172a]" : "bg-[#e2e8f0]"}`}>
           <button
             type="button"
             onClick={() => handleModeChange("uni")}
             className={`flex-1 text-center py-2.5 px-4 rounded-md text-sm font-semibold transition-all cursor-pointer border-none ${
               mode === "uni" 
-                ? "bg-white text-[#0f172a] shadow-sm" 
-                : "bg-transparent text-[#64748b]"
+                ? darkMode ? "bg-[#334155] text-white shadow-sm" : "bg-white text-[#0f172a] shadow-sm"
+                : darkMode ? "bg-transparent text-[#94a3b8]" : "bg-transparent text-[#64748b]"
             }`}
           >
             University Mode
@@ -147,8 +167,8 @@ export default function ParkingCalculatorPage() {
             onClick={() => handleModeChange("hourly")}
             className={`flex-1 text-center py-2.5 px-4 rounded-md text-sm font-semibold transition-all cursor-pointer border-none ${
               mode === "hourly" 
-                ? "bg-white text-[#0f172a] shadow-sm" 
-                : "bg-transparent text-[#64748b]"
+                ? darkMode ? "bg-[#334155] text-white shadow-sm" : "bg-white text-[#0f172a] shadow-sm"
+                : darkMode ? "bg-transparent text-[#94a3b8]" : "bg-transparent text-[#64748b]"
             }`}
           >
             Commercial Mode
@@ -159,7 +179,7 @@ export default function ParkingCalculatorPage() {
         <button
           type="button"
           onClick={() => toggleSection("revenue")}
-          className="w-full bg-[#f8fafc] py-4 px-6 border-y border-[#e2e8f0] cursor-pointer flex justify-between items-center font-semibold text-[#334155] hover:bg-[#f1f5f9] text-left"
+          className={sectionHeaderClass}
         >
           <span>1. Opportunity Analysis (Revenue)</span>
           <span className={`text-xs transition-transform ${sectionsOpen.revenue ? "rotate-180" : ""}`}>▼</span>
@@ -167,86 +187,86 @@ export default function ParkingCalculatorPage() {
         {sectionsOpen.revenue && (
           <div className="p-5 px-6">
             <div className="mb-4">
-              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Total Parking Spaces</label>
+              <label className={labelClass}>Total Parking Spaces</label>
               <input
                 type="number"
                 value={spaces}
                 onChange={(e) => setSpaces(Number(e.target.value))}
-                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+                className={inputClass}
               />
             </div>
 
             {mode === "uni" ? (
               <>
                 <div className="mb-4">
-                  <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Permit Cost (Semester)</label>
+                  <label className={labelClass}>Permit Cost (Semester)</label>
                   <input
                     type="number"
                     value={permitCost}
                     onChange={(e) => setPermitCost(Number(e.target.value))}
-                    className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+                    className={inputClass}
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Oversell Ratio (e.g., 1.4)</label>
+                  <label className={labelClass}>Oversell Ratio (e.g., 1.4)</label>
                   <input
                     type="number"
                     value={oversell}
                     onChange={(e) => setOversell(Number(e.target.value))}
                     step="0.1"
-                    className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+                    className={inputClass}
                   />
                 </div>
               </>
             ) : (
               <div className="mb-4">
-                <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Avg Hourly Rate ($)</label>
+                <label className={labelClass}>Avg Hourly Rate ($)</label>
                 <input
                   type="number"
                   value={hourlyRate}
                   onChange={(e) => setHourlyRate(Number(e.target.value))}
-                  className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+                  className={inputClass}
                 />
               </div>
             )}
 
             <div className="mb-4">
-              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">{"Est. \"Ghost Spot\" % (Inefficiency)"}</label>
+              <label className={labelClass}>{"Est. \"Ghost Spot\" % (Inefficiency)"}</label>
               <input
                 type="number"
                 value={ghost}
                 onChange={(e) => setGhost(Number(e.target.value))}
-                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+                className={inputClass}
               />
             </div>
 
-            <hr className="border-0 border-t border-[#eee] my-4" />
+            <hr className={`border-0 border-t my-4 ${darkMode ? "border-[#334155]" : "border-[#eee]"}`} />
 
             <div className="mb-4">
-              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Ticket/Citation Value ($)</label>
+              <label className={labelClass}>Ticket/Citation Value ($)</label>
               <input
                 type="number"
                 value={ticketValue}
                 onChange={(e) => setTicketValue(Number(e.target.value))}
-                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+                className={inputClass}
               />
             </div>
             <div className="mb-4">
-              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Daily Violation Rate (%)</label>
+              <label className={labelClass}>Daily Violation Rate (%)</label>
               <input
                 type="number"
                 value={violationRate}
                 onChange={(e) => setViolationRate(Number(e.target.value))}
-                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+                className={inputClass}
               />
             </div>
             <div className="mb-4">
-              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Current Capture Rate (% caught manually)</label>
+              <label className={labelClass}>Current Capture Rate (% caught manually)</label>
               <input
                 type="number"
                 value={captureRate}
                 onChange={(e) => setCaptureRate(Number(e.target.value))}
-                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+                className={inputClass}
               />
             </div>
           </div>
@@ -256,31 +276,31 @@ export default function ParkingCalculatorPage() {
         <button
           type="button"
           onClick={() => toggleSection("pricing")}
-          className="w-full bg-[#f8fafc] py-4 px-6 border-y border-[#e2e8f0] cursor-pointer flex justify-between items-center font-semibold text-[#334155] hover:bg-[#f1f5f9] text-left"
+          className={sectionHeaderClass}
         >
-          <span>2. Investment Structure (Hardware)</span>
+          <span>2. Investment Structure</span>
           <span className={`text-xs transition-transform ${sectionsOpen.pricing ? "rotate-180" : ""}`}>▼</span>
         </button>
         {sectionsOpen.pricing && (
           <div className="p-5 px-6">
             <div className="mb-4">
-              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Wayfinding Cameras ($150/mo)</label>
+              <label className={labelClass}>Wayfinding Cameras ($150/mo)</label>
               <input
                 type="number"
                 value={qtyWayfinding}
                 onChange={(e) => setQtyWayfinding(Number(e.target.value))}
                 placeholder="Qty"
-                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+                className={inputClass}
               />
             </div>
             <div className="mb-4">
-              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Enforcement Cameras ($350/mo)</label>
+              <label className={labelClass}>Enforcement Cameras ($350/mo)</label>
               <input
                 type="number"
                 value={qtyEnforcement}
                 onChange={(e) => setQtyEnforcement(Number(e.target.value))}
                 placeholder="Qty"
-                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+                className={inputClass}
               />
             </div>
           </div>
@@ -290,7 +310,7 @@ export default function ParkingCalculatorPage() {
         <button
           type="button"
           onClick={() => toggleSection("discounts")}
-          className="w-full bg-[#f8fafc] py-4 px-6 border-y border-[#e2e8f0] cursor-pointer flex justify-between items-center font-semibold text-[#334155] hover:bg-[#f1f5f9] text-left"
+          className={sectionHeaderClass}
         >
           <span>3. Incentives & Implementation</span>
           <span className={`text-xs transition-transform ${sectionsOpen.discounts ? "rotate-180" : ""}`}>▼</span>
@@ -298,37 +318,37 @@ export default function ParkingCalculatorPage() {
         {sectionsOpen.discounts && (
           <div className="p-5 px-6">
             <div className="mb-4">
-              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">One-Time Setup Fee ($)</label>
+              <label className={labelClass}>One-Time Setup Fee ($)</label>
               <input
                 type="number"
                 value={setupFee}
                 onChange={(e) => setSetupFee(Number(e.target.value))}
-                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+                className={inputClass}
               />
             </div>
             <div className="mb-4">
-              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Discount: Percentage (%) off Monthly</label>
+              <label className={labelClass}>Discount: Percentage (%) off Monthly</label>
               <input
                 type="number"
                 value={discPercent}
                 onChange={(e) => setDiscPercent(Number(e.target.value))}
-                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+                className={inputClass}
               />
             </div>
             <div className="mb-4">
-              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Discount: Flat Amount ($) off Monthly</label>
+              <label className={labelClass}>Discount: Flat Amount ($) off Monthly</label>
               <input
                 type="number"
                 value={discAmount}
                 onChange={(e) => setDiscAmount(Number(e.target.value))}
-                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+                className={inputClass}
               />
             </div>
           </div>
         )}
 
         {/* Button */}
-        <div className="p-5 px-6 bg-white">
+        <div className={`p-5 px-6 ${darkMode ? "bg-[#1e293b]" : "bg-white"}`}>
           <button
             type="button"
             onClick={calculate}
@@ -340,42 +360,42 @@ export default function ParkingCalculatorPage() {
 
         {/* Results */}
         {showResults && (
-          <div className="bg-white">
+          <div className={darkMode ? "bg-[#1e293b]" : "bg-white"}>
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="bg-[#f1f5f9] p-3 text-left text-xs uppercase text-[#64748b] border-b border-[#e2e8f0]">Period</th>
-                  <th className="bg-[#f1f5f9] p-3 text-left text-xs uppercase text-[#64748b] border-b border-[#e2e8f0]">Cost (Investment)</th>
-                  <th className="bg-[#f1f5f9] p-3 text-left text-xs uppercase text-[#64748b] border-b border-[#e2e8f0]">Revenue (Upside)</th>
-                  <th className="bg-[#f1f5f9] p-3 text-left text-xs uppercase text-[#64748b] border-b border-[#e2e8f0]">Net Profit</th>
+                  <th className={`p-3 text-left text-xs uppercase border-b ${darkMode ? "bg-[#0f172a] text-[#94a3b8] border-[#334155]" : "bg-[#f1f5f9] text-[#64748b] border-[#e2e8f0]"}`}>Period</th>
+                  <th className={`p-3 text-left text-xs uppercase border-b ${darkMode ? "bg-[#0f172a] text-[#94a3b8] border-[#334155]" : "bg-[#f1f5f9] text-[#64748b] border-[#e2e8f0]"}`}>Cost (Investment)</th>
+                  <th className={`p-3 text-left text-xs uppercase border-b ${darkMode ? "bg-[#0f172a] text-[#94a3b8] border-[#334155]" : "bg-[#f1f5f9] text-[#64748b] border-[#e2e8f0]"}`}>Revenue (Upside)</th>
+                  <th className={`p-3 text-left text-xs uppercase border-b ${darkMode ? "bg-[#0f172a] text-[#94a3b8] border-[#334155]" : "bg-[#f1f5f9] text-[#64748b] border-[#e2e8f0]"}`}>Net Profit</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#334155]">Monthly</td>
-                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#ef4444]">{formatMoney(results.costMo)}</td>
-                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#10b981]">{formatMoney(results.revMo)}</td>
-                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#059669]">{formatMoney(results.netMo)}</td>
+                  <td className={`py-4 px-3 border-b text-sm font-medium ${darkMode ? "border-[#334155] text-[#e2e8f0]" : "border-[#e2e8f0] text-[#334155]"}`}>Monthly</td>
+                  <td className={`py-4 px-3 border-b text-sm font-medium text-[#ef4444] ${darkMode ? "border-[#334155]" : "border-[#e2e8f0]"}`}>{formatMoney(results.costMo)}</td>
+                  <td className={`py-4 px-3 border-b text-sm font-medium text-[#10b981] ${darkMode ? "border-[#334155]" : "border-[#e2e8f0]"}`}>{formatMoney(results.revMo)}</td>
+                  <td className={`py-4 px-3 border-b text-sm font-medium text-[#059669] ${darkMode ? "border-[#334155]" : "border-[#e2e8f0]"}`}>{formatMoney(results.netMo)}</td>
                 </tr>
                 <tr>
-                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#334155]">Quarterly</td>
-                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#ef4444]">{formatMoney(results.costQt)}</td>
-                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#10b981]">{formatMoney(results.revQt)}</td>
-                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#059669]">{formatMoney(results.netQt)}</td>
+                  <td className={`py-4 px-3 border-b text-sm font-medium ${darkMode ? "border-[#334155] text-[#e2e8f0]" : "border-[#e2e8f0] text-[#334155]"}`}>Quarterly</td>
+                  <td className={`py-4 px-3 border-b text-sm font-medium text-[#ef4444] ${darkMode ? "border-[#334155]" : "border-[#e2e8f0]"}`}>{formatMoney(results.costQt)}</td>
+                  <td className={`py-4 px-3 border-b text-sm font-medium text-[#10b981] ${darkMode ? "border-[#334155]" : "border-[#e2e8f0]"}`}>{formatMoney(results.revQt)}</td>
+                  <td className={`py-4 px-3 border-b text-sm font-medium text-[#059669] ${darkMode ? "border-[#334155]" : "border-[#e2e8f0]"}`}>{formatMoney(results.netQt)}</td>
                 </tr>
                 <tr>
-                  <td className="py-4 px-3 bg-[#f8fafc] text-base font-bold text-[#334155]">Annual (Year 1)</td>
-                  <td className="py-4 px-3 bg-[#f8fafc] text-base font-bold text-[#ef4444]">{formatMoney(results.costYr)}</td>
-                  <td className="py-4 px-3 bg-[#f8fafc] text-base font-bold text-[#10b981]">{formatMoney(results.revYr)}</td>
-                  <td className="py-4 px-3 bg-[#f8fafc] text-base font-bold text-[#059669]">{formatMoney(results.netYr)}</td>
+                  <td className={`py-4 px-3 text-base font-bold ${darkMode ? "bg-[#0f172a] text-[#e2e8f0]" : "bg-[#f8fafc] text-[#334155]"}`}>Annual (Year 1)</td>
+                  <td className={`py-4 px-3 text-base font-bold text-[#ef4444] ${darkMode ? "bg-[#0f172a]" : "bg-[#f8fafc]"}`}>{formatMoney(results.costYr)}</td>
+                  <td className={`py-4 px-3 text-base font-bold text-[#10b981] ${darkMode ? "bg-[#0f172a]" : "bg-[#f8fafc]"}`}>{formatMoney(results.revYr)}</td>
+                  <td className={`py-4 px-3 text-base font-bold text-[#059669] ${darkMode ? "bg-[#0f172a]" : "bg-[#f8fafc]"}`}>{formatMoney(results.netYr)}</td>
                 </tr>
               </tbody>
             </table>
 
-            <div className="p-5 text-center bg-[#f0fdf4] border-t border-[#dcfce7]">
-              <div className="text-[13px] text-[#166534] font-semibold uppercase tracking-wide">Year 1 Total ROI</div>
-              <div className="text-[28px] font-extrabold text-[#15803d]">{formatMoney(results.finalRoi)}</div>
-              <div className="text-xs text-[#166534] mt-1">(After all costs, fees & discounts)</div>
+            <div className={`p-5 text-center border-t ${darkMode ? "bg-[#052e16] border-[#166534]" : "bg-[#f0fdf4] border-[#dcfce7]"}`}>
+              <div className={`text-[13px] font-semibold uppercase tracking-wide ${darkMode ? "text-[#4ade80]" : "text-[#166534]"}`}>Year 1 Total ROI</div>
+              <div className={`text-[28px] font-extrabold ${darkMode ? "text-[#22c55e]" : "text-[#15803d]"}`}>{formatMoney(results.finalRoi)}</div>
+              <div className={`text-xs mt-1 ${darkMode ? "text-[#4ade80]" : "text-[#166534]"}`}>(After all costs, fees & discounts)</div>
             </div>
           </div>
         )}
