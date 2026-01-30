@@ -3,261 +3,383 @@
 import { useState } from "react"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-
-type Mode = "hourly" | "uni"
 
 export default function ParkingCalculatorPage() {
-  const [mode, setMode] = useState<Mode>("hourly")
-  const [spaces, setSpaces] = useState(500)
-  const [hourlyRate, setHourlyRate] = useState(12)
+  const [mode, setMode] = useState<"uni" | "hourly">("uni")
+  const [sectionsOpen, setSectionsOpen] = useState({
+    revenue: true,
+    pricing: false,
+    discounts: false,
+  })
+  const [showResults, setShowResults] = useState(false)
+
+  // Inputs
+  const [spaces, setSpaces] = useState(2000)
   const [permitCost, setPermitCost] = useState(450)
   const [oversell, setOversell] = useState(1.4)
-  const [ghost, setGhost] = useState(8)
-  const [churn, setChurn] = useState(7)
+  const [hourlyRate, setHourlyRate] = useState(12)
+  const [ghost, setGhost] = useState(5)
   const [ticketValue, setTicketValue] = useState(45)
   const [violationRate, setViolationRate] = useState(3)
   const [captureRate, setCaptureRate] = useState(20)
-  const [results, setResults] = useState<{ efficiency: number; enforcement: number; total: number } | null>(null)
+  const [qtyWayfinding, setQtyWayfinding] = useState(0)
+  const [qtyEnforcement, setQtyEnforcement] = useState(0)
+  const [setupFee, setSetupFee] = useState(5000)
+  const [discPercent, setDiscPercent] = useState(0)
+  const [discAmount, setDiscAmount] = useState(0)
 
-  const handleModeChange = (newMode: Mode) => {
+  // Results
+  const [results, setResults] = useState({
+    costMo: 0, revMo: 0, netMo: 0,
+    costQt: 0, revQt: 0, netQt: 0,
+    costYr: 0, revYr: 0, netYr: 0,
+    finalRoi: 0,
+  })
+
+  const handleModeChange = (newMode: "uni" | "hourly") => {
     setMode(newMode)
-    setResults(null)
-    if (newMode === "hourly") {
-      setSpaces(500)
-    } else {
-      setSpaces(2000)
-    }
+    setShowResults(false)
+    setSpaces(newMode === "hourly" ? 500 : 2000)
+  }
+
+  const toggleSection = (section: "revenue" | "pricing" | "discounts") => {
+    setSectionsOpen(prev => ({ ...prev, [section]: !prev[section] }))
+  }
+
+  const formatMoney = (num: number) => {
+    return "$" + Math.round(num).toLocaleString()
   }
 
   const calculate = () => {
     const ghostPct = ghost / 100
+    const churnMins = 7
     const hoursPerDay = 10
     const turnsPerDay = 4
-    const totalDailyCars = spaces * turnsPerDay
 
-    let efficiencyGain = 0
+    let annualRevenue = 0
 
     if (mode === "hourly") {
       const ghostLoss = spaces * ghostPct * hourlyRate * hoursPerDay
-      const churnLoss = (churn / 60) * hourlyRate * turnsPerDay * spaces
-      efficiencyGain = (ghostLoss + churnLoss) * 365
+      const churnLoss = (churnMins / 60) * hourlyRate * turnsPerDay * spaces
+      annualRevenue = (ghostLoss + churnLoss) * 365
     } else {
-      const churnFactor = (churn * 4) / (hoursPerDay * 60)
+      const churnFactor = (churnMins * 4) / (hoursPerDay * 60)
       const totalInefficiency = ghostPct + churnFactor
       const recoveredSpots = Math.round(spaces * totalInefficiency)
       const newPermits = Math.round(recoveredSpots * oversell)
-      efficiencyGain = newPermits * permitCost * 2
+      annualRevenue = newPermits * permitCost * 2
     }
 
+    // Enforcement Logic
     const violRate = violationRate / 100
     const currentCap = captureRate / 100
-    const targetCap = 0.9
-
+    const targetCap = 0.90
+    const totalDailyCars = mode === "hourly" ? spaces * turnsPerDay : spaces * 0.8
     const totalViolations = totalDailyCars * violRate
     const currentCaught = totalViolations * currentCap
     const potentialCaught = totalViolations * targetCap
-
     const dailyEnforcementGain = (potentialCaught - currentCaught) * ticketValue
-    const annualEnforcementGain = dailyEnforcementGain * 365
+    annualRevenue += dailyEnforcementGain * 365
 
-    const totalUpside = efficiencyGain + annualEnforcementGain
+    const monthlyRevenue = annualRevenue / 12
+
+    // Cost Logic
+    const baseMonthlyCost = (qtyWayfinding * 150) + (qtyEnforcement * 350)
+
+    // Discount Logic
+    let finalMonthlyCost = baseMonthlyCost * (1 - (discPercent / 100))
+    finalMonthlyCost = finalMonthlyCost - discAmount
+    if (finalMonthlyCost < 0) finalMonthlyCost = 0
+
+    // Totals
+    const annualCost = (finalMonthlyCost * 12) + setupFee
+    const annualNet = annualRevenue - annualCost
 
     setResults({
-      efficiency: Math.round(efficiencyGain),
-      enforcement: Math.round(annualEnforcementGain),
-      total: Math.round(totalUpside),
+      costMo: finalMonthlyCost,
+      revMo: monthlyRevenue,
+      netMo: monthlyRevenue - finalMonthlyCost,
+      costQt: finalMonthlyCost * 3,
+      revQt: monthlyRevenue * 3,
+      netQt: (monthlyRevenue * 3) - (finalMonthlyCost * 3),
+      costYr: annualCost,
+      revYr: annualRevenue,
+      netYr: annualNet,
+      finalRoi: annualNet,
     })
+    setShowResults(true)
   }
 
   return (
-    <main className="min-h-screen bg-background p-4 md:p-8">
-      <div className="mx-auto max-w-xl">
-        <div className="mb-8">
-          <Link href="/interview-tools" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Interview Tools
-          </Link>
+    <div className="min-h-screen bg-[#f4f6f8] p-5 font-sans text-[#333]">
+      <div className="max-w-[600px] mx-auto mb-4">
+        <Link 
+          href="/interview-tools" 
+          className="inline-flex items-center gap-2 text-[#2563eb] hover:underline text-sm"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Interview Tools
+        </Link>
+      </div>
+
+      <div className="bg-white max-w-[600px] mx-auto rounded-xl shadow-lg overflow-hidden">
+        {/* Header */}
+        <div className="bg-[#0f172a] p-6 text-center text-white">
+          <h2 className="m-0 text-2xl font-bold">Spot Parking Architect</h2>
+          <p className="mt-1 opacity-80 text-sm">Deal Structure & ROI Calculator</p>
         </div>
 
-        <Card className="border-border">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-foreground flex items-center justify-center gap-2">
-              <span className="text-2xl">🅿️</span> Spot Parking Audit
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">Revenue, Efficiency & Enforcement</p>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Mode Toggle */}
-            <div className="flex bg-muted rounded-lg p-1">
-              <button
-                type="button"
-                onClick={() => handleModeChange("hourly")}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-all ${
-                  mode === "hourly"
-                    ? "bg-card text-primary shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Hourly Mode
-              </button>
-              <button
-                type="button"
-                onClick={() => handleModeChange("uni")}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-all ${
-                  mode === "uni"
-                    ? "bg-card text-primary shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                University Mode
-              </button>
-            </div>
+        {/* Mode Switch */}
+        <div className="flex p-2.5 bg-[#e2e8f0]">
+          <button
+            type="button"
+            onClick={() => handleModeChange("uni")}
+            className={`flex-1 text-center py-2.5 px-4 rounded-md text-sm font-semibold transition-all cursor-pointer border-none ${
+              mode === "uni" 
+                ? "bg-white text-[#0f172a] shadow-sm" 
+                : "bg-transparent text-[#64748b]"
+            }`}
+          >
+            University Mode
+          </button>
+          <button
+            type="button"
+            onClick={() => handleModeChange("hourly")}
+            className={`flex-1 text-center py-2.5 px-4 rounded-md text-sm font-semibold transition-all cursor-pointer border-none ${
+              mode === "hourly" 
+                ? "bg-white text-[#0f172a] shadow-sm" 
+                : "bg-transparent text-[#64748b]"
+            }`}
+          >
+            Commercial Mode
+          </button>
+        </div>
 
-            {/* Total Spaces */}
-            <div className="space-y-2">
-              <Label htmlFor="spaces">Total Parking Spaces</Label>
-              <Input
-                id="spaces"
+        {/* Section 1: Revenue */}
+        <button
+          type="button"
+          onClick={() => toggleSection("revenue")}
+          className="w-full bg-[#f8fafc] py-4 px-6 border-y border-[#e2e8f0] cursor-pointer flex justify-between items-center font-semibold text-[#334155] hover:bg-[#f1f5f9] text-left"
+        >
+          <span>1. Opportunity Analysis (Revenue)</span>
+          <span className={`text-xs transition-transform ${sectionsOpen.revenue ? "rotate-180" : ""}`}>▼</span>
+        </button>
+        {sectionsOpen.revenue && (
+          <div className="p-5 px-6">
+            <div className="mb-4">
+              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Total Parking Spaces</label>
+              <input
                 type="number"
                 value={spaces}
                 onChange={(e) => setSpaces(Number(e.target.value))}
+                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
               />
             </div>
 
-            {/* Mode-specific inputs */}
-            {mode === "hourly" ? (
-              <div className="space-y-2">
-                <Label htmlFor="hourlyRate">Avg Hourly Rate ($)</Label>
-                <Input
-                  id="hourlyRate"
-                  type="number"
-                  value={hourlyRate}
-                  onChange={(e) => setHourlyRate(Number(e.target.value))}
-                />
-              </div>
-            ) : (
+            {mode === "uni" ? (
               <>
-                <div className="space-y-2">
-                  <Label htmlFor="permitCost">Semester Permit Cost ($)</Label>
-                  <Input
-                    id="permitCost"
+                <div className="mb-4">
+                  <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Permit Cost (Semester)</label>
+                  <input
                     type="number"
                     value={permitCost}
                     onChange={(e) => setPermitCost(Number(e.target.value))}
+                    className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="oversell">Oversell Ratio</Label>
-                  <Input
-                    id="oversell"
+                <div className="mb-4">
+                  <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Oversell Ratio (e.g., 1.4)</label>
+                  <input
                     type="number"
-                    step="0.1"
                     value={oversell}
                     onChange={(e) => setOversell(Number(e.target.value))}
+                    step="0.1"
+                    className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
                   />
                 </div>
               </>
-            )}
-
-            {/* Efficiency Metrics */}
-            <div>
-              <h3 className="text-xs font-bold uppercase text-muted-foreground tracking-wide mb-3 pb-2 border-b border-border">
-                Efficiency Metrics
-              </h3>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ghost">Est. "Ghost Spot" % (Empty but hidden)</Label>
-                  <Input
-                    id="ghost"
-                    type="number"
-                    value={ghost}
-                    onChange={(e) => setGhost(Number(e.target.value))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="churn">Turnover Delay (Mins lost per car)</Label>
-                  <Input
-                    id="churn"
-                    type="number"
-                    value={churn}
-                    onChange={(e) => setChurn(Number(e.target.value))}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Enforcement & Compliance */}
-            <div>
-              <h3 className="text-xs font-bold uppercase text-muted-foreground tracking-wide mb-3 pb-2 border-b border-border">
-                Enforcement & Compliance
-              </h3>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ticketValue">Citation / Ticket Value ($)</Label>
-                  <Input
-                    id="ticketValue"
-                    type="number"
-                    value={ticketValue}
-                    onChange={(e) => setTicketValue(Number(e.target.value))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="violationRate">Daily Violation Rate (Est. % of cars)</Label>
-                  <Input
-                    id="violationRate"
-                    type="number"
-                    value={violationRate}
-                    onChange={(e) => setViolationRate(Number(e.target.value))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="captureRate">Current Capture Rate (% caught manually)</Label>
-                  <Input
-                    id="captureRate"
-                    type="number"
-                    value={captureRate}
-                    onChange={(e) => setCaptureRate(Number(e.target.value))}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Calculate Button */}
-            <Button
-              onClick={calculate}
-              className="w-full"
-              size="lg"
-              style={{ backgroundColor: "oklch(0.65 0.12 175)" }}
-            >
-              Analyze Opportunity
-            </Button>
-
-            {/* Results */}
-            {results && (
-              <div className="mt-6 p-5 bg-muted rounded-lg border-l-4 border-primary">
-                <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Efficiency Gain (Annual):</span>
-                    <span className="font-semibold text-green-500">${results.efficiency.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Recovered Citations (Annual):</span>
-                    <span className="font-semibold text-red-500">${results.enforcement.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between pt-3 border-t border-border text-lg font-bold">
-                    <span className="text-foreground">Total Annual Upside:</span>
-                    <span className="text-foreground">${results.total.toLocaleString()}</span>
-                  </div>
-                </div>
+            ) : (
+              <div className="mb-4">
+                <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Avg Hourly Rate ($)</label>
+                <input
+                  type="number"
+                  value={hourlyRate}
+                  onChange={(e) => setHourlyRate(Number(e.target.value))}
+                  className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+                />
               </div>
             )}
-          </CardContent>
-        </Card>
+
+            <div className="mb-4">
+              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">{"Est. \"Ghost Spot\" % (Inefficiency)"}</label>
+              <input
+                type="number"
+                value={ghost}
+                onChange={(e) => setGhost(Number(e.target.value))}
+                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+              />
+            </div>
+
+            <hr className="border-0 border-t border-[#eee] my-4" />
+
+            <div className="mb-4">
+              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Ticket/Citation Value ($)</label>
+              <input
+                type="number"
+                value={ticketValue}
+                onChange={(e) => setTicketValue(Number(e.target.value))}
+                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Daily Violation Rate (%)</label>
+              <input
+                type="number"
+                value={violationRate}
+                onChange={(e) => setViolationRate(Number(e.target.value))}
+                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Current Capture Rate (% caught manually)</label>
+              <input
+                type="number"
+                value={captureRate}
+                onChange={(e) => setCaptureRate(Number(e.target.value))}
+                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Section 2: Pricing */}
+        <button
+          type="button"
+          onClick={() => toggleSection("pricing")}
+          className="w-full bg-[#f8fafc] py-4 px-6 border-y border-[#e2e8f0] cursor-pointer flex justify-between items-center font-semibold text-[#334155] hover:bg-[#f1f5f9] text-left"
+        >
+          <span>2. Investment Structure (Hardware)</span>
+          <span className={`text-xs transition-transform ${sectionsOpen.pricing ? "rotate-180" : ""}`}>▼</span>
+        </button>
+        {sectionsOpen.pricing && (
+          <div className="p-5 px-6">
+            <div className="mb-4">
+              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Wayfinding Cameras ($150/mo)</label>
+              <input
+                type="number"
+                value={qtyWayfinding}
+                onChange={(e) => setQtyWayfinding(Number(e.target.value))}
+                placeholder="Qty"
+                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Enforcement Cameras ($350/mo)</label>
+              <input
+                type="number"
+                value={qtyEnforcement}
+                onChange={(e) => setQtyEnforcement(Number(e.target.value))}
+                placeholder="Qty"
+                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Section 3: Discounts */}
+        <button
+          type="button"
+          onClick={() => toggleSection("discounts")}
+          className="w-full bg-[#f8fafc] py-4 px-6 border-y border-[#e2e8f0] cursor-pointer flex justify-between items-center font-semibold text-[#334155] hover:bg-[#f1f5f9] text-left"
+        >
+          <span>3. Incentives & Implementation</span>
+          <span className={`text-xs transition-transform ${sectionsOpen.discounts ? "rotate-180" : ""}`}>▼</span>
+        </button>
+        {sectionsOpen.discounts && (
+          <div className="p-5 px-6">
+            <div className="mb-4">
+              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">One-Time Setup Fee ($)</label>
+              <input
+                type="number"
+                value={setupFee}
+                onChange={(e) => setSetupFee(Number(e.target.value))}
+                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Discount: Percentage (%) off Monthly</label>
+              <input
+                type="number"
+                value={discPercent}
+                onChange={(e) => setDiscPercent(Number(e.target.value))}
+                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-[13px] font-semibold text-[#475569] mb-1.5">Discount: Flat Amount ($) off Monthly</label>
+              <input
+                type="number"
+                value={discAmount}
+                onChange={(e) => setDiscAmount(Number(e.target.value))}
+                className="w-full p-2.5 border border-[#cbd5e1] rounded-md text-[15px] bg-white focus:border-[#3b82f6] focus:outline-none focus:ring-[3px] focus:ring-[rgba(59,130,246,0.1)]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Button */}
+        <div className="p-5 px-6 bg-white">
+          <button
+            type="button"
+            onClick={calculate}
+            className="w-full bg-[#2563eb] text-white border-none py-3.5 rounded-lg text-base font-bold cursor-pointer transition-all shadow-md hover:bg-[#1d4ed8] hover:-translate-y-0.5"
+          >
+            Generate ROI Report
+          </button>
+        </div>
+
+        {/* Results */}
+        {showResults && (
+          <div className="bg-white">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="bg-[#f1f5f9] p-3 text-left text-xs uppercase text-[#64748b] border-b border-[#e2e8f0]">Period</th>
+                  <th className="bg-[#f1f5f9] p-3 text-left text-xs uppercase text-[#64748b] border-b border-[#e2e8f0]">Cost (Investment)</th>
+                  <th className="bg-[#f1f5f9] p-3 text-left text-xs uppercase text-[#64748b] border-b border-[#e2e8f0]">Revenue (Upside)</th>
+                  <th className="bg-[#f1f5f9] p-3 text-left text-xs uppercase text-[#64748b] border-b border-[#e2e8f0]">Net Profit</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#334155]">Monthly</td>
+                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#ef4444]">{formatMoney(results.costMo)}</td>
+                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#10b981]">{formatMoney(results.revMo)}</td>
+                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#059669]">{formatMoney(results.netMo)}</td>
+                </tr>
+                <tr>
+                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#334155]">Quarterly</td>
+                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#ef4444]">{formatMoney(results.costQt)}</td>
+                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#10b981]">{formatMoney(results.revQt)}</td>
+                  <td className="py-4 px-3 border-b border-[#e2e8f0] text-sm font-medium text-[#059669]">{formatMoney(results.netQt)}</td>
+                </tr>
+                <tr>
+                  <td className="py-4 px-3 bg-[#f8fafc] text-base font-bold text-[#334155]">Annual (Year 1)</td>
+                  <td className="py-4 px-3 bg-[#f8fafc] text-base font-bold text-[#ef4444]">{formatMoney(results.costYr)}</td>
+                  <td className="py-4 px-3 bg-[#f8fafc] text-base font-bold text-[#10b981]">{formatMoney(results.revYr)}</td>
+                  <td className="py-4 px-3 bg-[#f8fafc] text-base font-bold text-[#059669]">{formatMoney(results.netYr)}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div className="p-5 text-center bg-[#f0fdf4] border-t border-[#dcfce7]">
+              <div className="text-[13px] text-[#166534] font-semibold uppercase tracking-wide">Year 1 Total ROI</div>
+              <div className="text-[28px] font-extrabold text-[#15803d]">{formatMoney(results.finalRoi)}</div>
+              <div className="text-xs text-[#166534] mt-1">(After all costs, fees & discounts)</div>
+            </div>
+          </div>
+        )}
       </div>
-    </main>
+    </div>
   )
 }
