@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Download } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 function FrameworkCard({ 
   title, 
@@ -37,9 +38,24 @@ export default function FrameworksPage() {
 
         <header className="text-center mb-12">
           <h1 className="text-3xl md:text-4xl font-bold mb-3">Revenue Frameworks Lab</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
             Proprietary Systems for AI-Accelerated Sales and Remote Leadership
           </p>
+          <Button
+            size="lg"
+            className="h-12 px-6 font-semibold hover:opacity-90"
+            style={{ backgroundColor: "oklch(0.65 0.12 175)", color: "white" }}
+            asChild
+          >
+            <a 
+              href="https://blobs.vusercontent.net/blob/THE%20REVENUE%20ACCELERATION%20PROTOCOL-3PBGjqzZkN9bFcjqzfcvOfuRWt27r5.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Get The PDF
+            </a>
+          </Button>
         </header>
 
         <div className="mb-12 p-6 rounded-xl border border-border bg-card">
