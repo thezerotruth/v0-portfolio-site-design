@@ -1,8 +1,10 @@
+import Link from "next/link"
 import { ProfileCard } from "@/components/profile-card"
 import { NewsletterCard } from "@/components/newsletter-card"
 import { StatementSection } from "@/components/statement-section"
 import { PortfolioSection } from "@/components/portfolio-section"
 import { FooterSection } from "@/components/footer-section"
+import { Button } from "@/components/ui/button"
 
 export default function Home() {
   return (
@@ -24,6 +26,20 @@ export default function Home() {
 
           {/* Statement Section */}
           <StatementSection />
+
+          {/* Frameworks Button */}
+          <div className="flex justify-center">
+            <Button
+              size="lg"
+              className="h-12 px-8 text-base font-semibold hover:opacity-90"
+              style={{ backgroundColor: "oklch(0.65 0.12 175)", color: "white" }}
+              asChild
+            >
+              <Link href="/frameworks">
+                Explore My Revenue Frameworks
+              </Link>
+            </Button>
+          </div>
 
           {/* Middle - AI Portfolio */}
           <PortfolioSection />
