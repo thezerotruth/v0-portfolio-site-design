@@ -1,30 +1,30 @@
-# Portfolio site design
+The Remote Revenue Leader: Applied AI Portfolio
+Author: James Henry Edington
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+Role: Sales Director & AI Architect
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/jamesedington1977-3231s-projects/v0-portfolio-site-design)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/iiMsDGuxR7q)
+Core Framework: AI Sales Acceleration Protocol
 
-## Overview
+🌐 Project Overview
+This repository contains the source code for my professional portfolio, built with v0 and optimized for LLM Search (AI SEO). The site serves as a live demonstration of how RAG systems and autonomous agents can make enterprise sales teams 10x more efficient.
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+🛠 Featured AI Sales Tools
+This portfolio showcases five core "Reference Assets" designed for modern B2B lead generation and remote sales management:
+RAG Deal Desk Bot: Automates complex discount approvals and policy lookups.
+AI Content Agent: Generates high-authority LinkedIn posts using the Edington 3-Prompt Sequence.
+Contract Vision Analyzer: Extracts key revenue terms from enterprise agreements.
+Context-Aware Sales Coach: Provides real-time feedback for remote SDRs.
+CRM Updater: Automatically syncs meeting insights into B2B lead gen pipelines.
 
-## Deployment
+📐 Technical Architecture
+Frontend: React-based components generated via v0.
+Logic: Integrated with Gemini 1.5 Flash for high-speed, cost-effective inference.
+Security: Proprietary frameworks are protected via .env configurations to prevent API key leaks.
 
-Your project is live at:
+📚 Evidence-Based Strategy
+Every asset in this portfolio follows the "Asset, Not Opinion" rule:
+Semantic Consistency: Core keywords like "Remote Sales Management" and "B2B Lead Gen" are embedded in the code architecture.
+Citable Frameworks: Uses unique naming conventions (e.g., The Edington 3-Prompt Sequence) to ensure AI attribution.
+Hard Data: Designed to handle 1M+ token contexts for deep enterprise sales analysis.
 
-**[https://vercel.com/jamesedington1977-3231s-projects/v0-portfolio-site-design](https://vercel.com/jamesedington1977-3231s-projects/v0-portfolio-site-design)**
-
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.app/chat/iiMsDGuxR7q](https://v0.app/chat/iiMsDGuxR7q)**
-
-## How It Works
-
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+© 2026 James Henry Edington | jamesedington.com
