@@ -7,6 +7,7 @@ const projects = [
     title: "RAG Deal Desk Bot",
     icon: MessageSquare,
     color: "primary" as const,
+    href: "https://thezerotruth-rap-portfolio-app-aklp9k.streamlit.app/",
   },
   {
     title: "AI Content Agent",
@@ -64,7 +65,7 @@ export function PortfolioSection() {
       <CardContent className="p-6">
         {/* Section Header */}
         <h2 className="mb-5 text-lg font-semibold text-foreground">
-          Applied AI Portfolio 🚧 In Development: RAG Deal Desk Bot Full case studies coming soon. 
+          {"Applied AI Portfolio 🚧 In Development: AI Content Agent Coming Soon!"}
         </h2>
 
         {/* Project Cards Grid */}
@@ -82,17 +83,17 @@ function ProjectCard({
   title,
   icon: Icon,
   color,
+  href,
 }: {
   title: string
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
   color: "primary" | "gold" | "purple"
+  href?: string
 }) {
   const styles = colorStyles[color]
   
-  return (
-    <div
-      className={`flex flex-col items-center rounded-xl border p-4 text-center transition-all bg-secondary/50 ${styles.border} ${styles.hoverBorder}`}
-    >
+  const cardContent = (
+    <>
       {/* Icon */}
       <div
         className={`mb-3 flex h-10 w-10 items-center justify-center rounded-lg ${styles.bg || ""} ${styles.text || ""}`}
@@ -109,6 +110,27 @@ function ProjectCard({
         <div className="h-2 w-2 rounded-full bg-primary" />
         <div className="h-2 w-2 rounded-full" style={{ backgroundColor: "oklch(0.8 0.15 85)" }} />
       </div>
+    </>
+  )
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`flex flex-col items-center rounded-xl border p-4 text-center transition-all bg-secondary/50 ${styles.border} ${styles.hoverBorder} cursor-pointer`}
+      >
+        {cardContent}
+      </a>
+    )
+  }
+
+  return (
+    <div
+      className={`flex flex-col items-center rounded-xl border p-4 text-center transition-all bg-secondary/50 ${styles.border} ${styles.hoverBorder}`}
+    >
+      {cardContent}
     </div>
   )
 }
