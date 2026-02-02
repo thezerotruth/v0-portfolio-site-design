@@ -10,9 +10,10 @@ const projects = [
     href: "https://thezerotruth-rap-portfolio-app-aklp9k.streamlit.app/",
   },
   {
-    title: "AI Content Agent",
+    title: "AI Ghostwriter",
     icon: FileEdit,
     color: "gold" as const,
+    href: "https://thezerotruth-ghostwriter-portfolio-app-odunf2.streamlit.app/",
   },
   {
     title: "Contract Vision Analyzer",
@@ -65,7 +66,7 @@ export function PortfolioSection() {
       <CardContent className="p-6">
         {/* Section Header */}
         <h2 className="mb-5 text-lg font-semibold text-foreground">
-          {"Applied AI Portfolio 🚧 In Development: AI Content Agent Coming Soon!"}
+          {"Applied AI Portfolio 🚧 In Development: RAG Desk and AI Ghostwriter Active, CRM Updater Coming Soon."}
         </h2>
 
         {/* Project Cards Grid */}
