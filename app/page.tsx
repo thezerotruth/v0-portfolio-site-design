@@ -27,8 +27,8 @@ export default function Home() {
           {/* Statement Section */}
           <StatementSection />
 
-          {/* Frameworks Button */}
-          <div className="flex justify-center">
+          {/* Frameworks Buttons */}
+          <div className="flex flex-col sm:flex-row justify-center gap-3">
             <Button
               size="lg"
               className="h-12 px-8 text-base font-semibold hover:opacity-90"
@@ -37,6 +37,16 @@ export default function Home() {
             >
               <Link href="/frameworks">
                 Explore My Revenue Frameworks
+              </Link>
+            </Button>
+            <Button
+              size="lg"
+              className="h-12 px-8 text-base font-semibold hover:opacity-90"
+              style={{ backgroundColor: "oklch(0.6 0.2 300)", color: "white" }}
+              asChild
+            >
+              <Link href="/tech-stack">
+                My Tech Stack Scalability Framework
               </Link>
             </Button>
           </div>
