@@ -77,6 +77,22 @@ export default function RootLayout({
             })('p1e024Bo22QaGB6d');
           `}
         </Script>
+
+        {/* Apollo Website Tracker */}
+        <Script id="apollo-tracker" strategy="afterInteractive">
+          {`
+            function initApollo(){
+              var n=Math.random().toString(36).substring(7),
+              o=document.createElement("script");
+              o.src="https://assets.apollo.io/micro/website-tracker/tracker.iife.js?nocache="+n;
+              o.async=true;
+              o.defer=true;
+              o.onload=function(){window.trackingFunctions.onLoad({appId:"698044d3e8d6ea0015181076"})};
+              document.head.appendChild(o)
+            }
+            initApollo();
+          `}
+        </Script>
       </head>
       <body className={`font-sans antialiased`}>
         {children}
